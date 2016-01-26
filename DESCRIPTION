@@ -1,0 +1,12 @@
+Package: lbdiag
+Title: Diagnostic Accuracy Miscellaneous Utilities
+Version: 0.1
+Authors@R: person('Luca', 'Braglia', email = 'lbraglia@mailbox.org', role = c('aut', 'cre'))
+Description: Diagnostic accuracy miscellaneous utilities.
+Depends:
+    R (>= 3.2.3)
+Imports: bdpv, pROC
+License: GPL-3
+LazyData: true
+RoxygenNote: 5.0.1
+Suggests: testthat
