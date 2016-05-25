@@ -5,46 +5,42 @@
 \title{Calculate diagnostic accuracy measures for binary measures (test, reference
 standard)}
 \usage{
-da(test = NULL, refstd = NULL, alpha = 0.05, round.dig = 4,
-  positive.first = TRUE, ppv.npv.prev = NULL,
-  ppv.npv.force.unadj.est = FALSE)
+da(test = NULL, refstd = NULL, alpha = 0.05, digits = 4L,
+  positive_first = TRUE, ppv_npv_prev = NULL, ppv_npv_force_unadj = FALSE)
 }
 \arguments{
-\item{test}{Test (dichotomic)}
+\item{test}{test variable (dichotomic factor or logical)}
 
-\item{refstd}{Reference standard (dichotomic)}
+\item{refstd}{reference standard (dichotomic factor or logical)}
 
-\item{alpha}{Type I error (for two sided confidence interval)}
+\item{alpha}{type I error for two sided confidence interval}
 
-\item{round.dig}{Rounding digits}
+\item{digits}{rounding digits}
 
-\item{positive.first}{Display positive test and reference standard in first
-row column}
+\item{positive_first}{logical: display positive test and reference
+standard in first row column}
 
-\item{ppv.npv.prev}{Prevalence adopted for ppv and npv confidence interval
-(if NULL estimated from sample)}
+\item{ppv_npv_prev}{prevalence adopted for ppv and npv confidence
+interval (if NULL it's estimated from sample)}
 
-\item{ppv.npv.force.unadj.est}{Force unadjusted ppv npv estimates (and
+\item{ppv_npv_force_unadj}{logical: force unadjusted ppv npv estimates (and
 confidence interval)}
 }
-\value{
-Diagnostic accuracy table and statistics with confidence interval.
-}
 \description{
-Calculate diagnostic accuracy measures for binary measures (test, reference
-standard)
+Calculate diagnostic accuracy measures for binary measures (test,
+reference standard) and confidence intervals (two sided binomial
+for all the indexes except PPV and NPV, calculated via bdpv a-la
+Marcaldo)
 }
 \examples{
 
+## CASS Example (Pepe pag 22)
+db <- dadb(tn = 327, fn = 208, fp = 115, tp = 815)
+with(db, da(test = test, refstd = refstd))
 
-## Example CASS pag 22 Pepe
-db <- dadb(tn=327 , fn=208 ,fp =115 , tp=815)
-with(db, da(test=test, refstd=refstd))
-
-## Example Alzheimer mercaldo
-db <- dadb(tn=288 , fn=178 ,fp =87 , tp=240)
-with(db, da(test=test, refstd=refstd, ppv.npv.prev=.03))
-
+## Alzheimer Example (Mercaldo 2007)
+db <- dadb(tn = 288, fn = 178 , fp = 87, tp = 240)
+with(db, da(test = test, refstd = refstd, ppv_npv_prev = .03))
 
 }
 

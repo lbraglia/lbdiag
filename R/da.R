@@ -1,60 +1,59 @@
 #' Calculate diagnostic accuracy measures for binary measures (test, reference
 #' standard)
 #' 
+#' Calculate diagnostic accuracy measures for binary measures (test,
+#' reference standard) and confidence intervals (two sided binomial
+#' for all the indexes except PPV and NPV, calculated via bdpv a-la
+#' Marcaldo)
 #' 
-#' Calculate diagnostic accuracy measures for binary measures (test, reference
-#' standard)
-#' 
-#' 
-#' @param test Test (dichotomic)
-#' @param refstd Reference standard (dichotomic)
-#' @param alpha Type I error (for two sided confidence interval)
-#' @param round.dig Rounding digits
-#' @param positive.first Display positive test and reference standard in first
-#' row column
-#' @param ppv.npv.prev Prevalence adopted for ppv and npv confidence interval
-#' (if NULL estimated from sample)
-#' @param ppv.npv.force.unadj.est Force unadjusted ppv npv estimates (and
-#' confidence interval)
-#' @return Diagnostic accuracy table and statistics with confidence interval.
+#' @param test test variable (dichotomic factor or logical)
+#' @param refstd reference standard (dichotomic factor or logical)
+#' @param alpha type I error for two sided confidence interval
+#' @param digits rounding digits
+#' @param positive_first logical: display positive test and reference
+#'     standard in first row column
+#' @param ppv_npv_prev prevalence adopted for ppv and npv confidence
+#'     interval (if NULL it's estimated from sample)
+#' @param ppv_npv_force_unadj logical: force unadjusted ppv npv estimates (and
+#'     confidence interval)
 #' @examples
 #' 
+#' ## CASS Example (Pepe pag 22)
+#' db <- dadb(tn = 327, fn = 208, fp = 115, tp = 815)
+#' with(db, da(test = test, refstd = refstd))
 #' 
-#' ## Example CASS pag 22 Pepe
-#' db <- dadb(tn=327 , fn=208 ,fp =115 , tp=815)
-#' with(db, da(test=test, refstd=refstd))
-#' 
-#' ## Example Alzheimer mercaldo
-#' db <- dadb(tn=288 , fn=178 ,fp =87 , tp=240)
-#' with(db, da(test=test, refstd=refstd, ppv.npv.prev=.03))
-#' 
+#' ## Alzheimer Example (Mercaldo 2007)
+#' db <- dadb(tn = 288, fn = 178 , fp = 87, tp = 240)
+#' with(db, da(test = test, refstd = refstd, ppv_npv_prev = .03))
 #' 
 #' @export
-da <- function(test=NULL, refstd=NULL,
-               alpha=.05, round.dig=4,
-               ## the table print, should put + before - 
-               ## (both for test and refst, 
-               ## the factor put - first and then +)
-               positive.first=TRUE,
-               ## Prevalenza per il calcolo dei ci di mercaldo per ppv npv
-               ## Se NULL viene utilizzata quella disponibile dal campione
-               ppv.npv.prev=NULL,
-               ppv.npv.force.unadj.est=FALSE
-               ) {
-    
-    ## For npv ppv confidence intervals
-    ## require(bdpv)
-    
+da <- function(test                = NULL,
+               refstd              = NULL,
+               alpha               = 0.05,
+               digits              = 4L,
+               positive_first      = TRUE,
+               ppv_npv_prev        = NULL,
+               ppv_npv_force_unadj = FALSE)
+{
+
+    ## Test input
+    test_refstd_ok <- function(x) (is.factor(x) && nlevels(x) == 2L) || is.logical(x)
+    if (!test_refstd_ok(test))
+        stop('test must be a logical or a factor with 2 levels')
+    if (!test_refstd_ok(refstd))
+        stop('refstd must be a logical or a factor with 2 levels')
+
+    ## TODO HERE
     ok.input <- (is.factor(test) | is.logical(test)) & 
         (is.factor(refstd) | is.logical(refstd)) &
-            (is.logical(positive.first)) &
-                (is.null(ppv.npv.prev) | is.numeric(ppv.npv.prev))
+            (is.logical(positive_first)) &
+                (is.null(ppv_npv_prev) | is.numeric(ppv_npv_prev))
     
     ## testa l'immissione
     if (!(ok.input)) {
         stop("'test' and/or 'refstd' missing or not (factor |logical).\n",
-             "OR positive.first not logical\n",
-             "OR 'ppv.npv.prev'  not (null|numeric)"
+             "OR positive_first not logical\n",
+             "OR 'ppv_npv_prev'  not (null|numeric)"
              )
     }
 		
@@ -64,11 +63,6 @@ da <- function(test=NULL, refstd=NULL,
     } 
     if (is.logical(refstd)) {
         refstd <- factor(refstd, levels=c(FALSE, TRUE))
-    }
-
-    ## Controlla che sia test che refstd abbiano 2 livelli
-    if ( ! ((nlevels(test) == 2L) & (nlevels(refstd) == 2L)) ) {
-        stop("nlevels must be 2 for both test and refstd")
     }
 	
     ## ##############   TABLE ##########################
@@ -83,17 +77,17 @@ da <- function(test=NULL, refstd=NULL,
     ## positive first handling
     ## ora che ho estratto i dati da una forma tipica dell'elaborazione 
     ## li metto in forma tipica per la stampa, se desiderato
-    tab.positive.first <- matrix(c(tab[2,2],tab[2,1], 
+    tab.positive_first <- matrix(c(tab[2,2],tab[2,1], 
                                    tab[1,2],tab[1,1]),
                                  ncol=2, byrow=T,
                                  dimnames=list("test"=rev(levels(test)),
                                      "refstd"=rev(levels(refstd)) 
                                      ))
-    class(tab.positive.first) <- class(tab)
+    class(tab.positive_first) <- class(tab)
 
-    ## Table for results depends on positive.first
-    tab.for.results <- if (positive.first) {
-        tab.positive.first
+    ## Table for results depends on positive_first
+    tab.for.results <- if (positive_first) {
+        tab.positive_first
     } else {
         tab
     }
@@ -144,19 +138,19 @@ da <- function(test=NULL, refstd=NULL,
     ## del paper disponibili.  Prima la standard logit, qui
     ## sotto, poi la adjusted logit
 
-    if( is.null(ppv.npv.prev) ) {
+    if( is.null(ppv_npv_prev) ) {
         ## Se l'utente non ha specificato un valore di prevalenza, 
         ## prendere quello del campione
         prev <- prevalence
-    } else if (is.numeric(ppv.npv.prev) & (ppv.npv.prev>=0 &
-                                           ppv.npv.prev<=1 )){
+    } else if (is.numeric(ppv_npv_prev) & (ppv_npv_prev>=0 &
+                                           ppv_npv_prev<=1 )){
         ## Se invece l'ha specificato, posto che sia ragionevo
-        prev <- ppv.npv.prev
+        prev <- ppv_npv_prev
     } else {
-        stop("ppv.npv.prev must be NULL or numeric [0,1]")		
+        stop("ppv_npv_prev must be NULL or numeric [0,1]")		
     }	
 	
-    if (all(tab>0) | ( any(tab==0) & (ppv.npv.force.unadj.est==TRUE)) ) {
+    if (all(tab>0) | ( any(tab==0) & (ppv_npv_force_unadj==TRUE)) ) {
         ## PPV NPV standard logit estimates (mercaldo)
         
         ## PPV standard logit
@@ -190,7 +184,7 @@ da <- function(test=NULL, refstd=NULL,
     } else {
 	
         ## PPV NPV adjusted logit estimates (mercaldo)
-        xmat <- unname(as.matrix(tab.positive.first))
+        xmat <- unname(as.matrix(tab.positive_first))
         class(xmat) <- "matrix"
         pv.tmp <- bdpv::BDtest(xmat = xmat, 
                          pr=prev, 
@@ -216,7 +210,7 @@ da <- function(test=NULL, refstd=NULL,
         c(youden, rep(NA,2))
 	))
     
-    stat <- round(stat,round.dig)
+    stat <- round(stat,digits)
     names(stat) <- c("Est","Low.CI", "Up.CI")
     stat$stat <- c("Prevalence","Sensitivity",
                    "Specificity","Accuracy",
@@ -237,7 +231,7 @@ da <- function(test=NULL, refstd=NULL,
     
     ## Example di mercaldo su alzheimer
     ## db <- dadb(tn=288 , fn=178 ,fp =87 , tp=240)
-    ## with(db, da2(test=test, refstd=refstd, ppv.npv.prev=.03))
+    ## with(db, da2(test=test, refstd=refstd, ppv_npv_prev=.03))
 
 }
 
@@ -249,27 +243,27 @@ da <- function(test=NULL, refstd=NULL,
 
 ## # diagnostic accuracy common indicators
 ## da.old <- function(test=NULL, refstd=NULL,
-## 				alpha=.05, round.dig=4,
+## 				alpha=.05, digits=4,
 ## 				# the table print, should put + before - 
 ## 				# (both for test and refst, 
 ## 				# the factor put - first and then +)
-## 				positive.first=TRUE,
+## 				positive_first=TRUE,
 ## 				# Prevalenza per il calcolo dei ci di mercaldo per ppv npv
 ## 				# Se NULL viene utilizzata quella disponibile dal campione
-## 				ppv.npv.prev=NULL
+## 				ppv_npv_prev=NULL
 ## 				) 
 ## {
 	
 ## 	ok.input <- (is.factor(test) | is.logical(test)) & 
 ## 				(is.factor(refstd) | is.logical(refstd)) &
-## 				(is.logical(positive.first)) &
-## 				(is.null(ppv.npv.prev) | is.numeric(ppv.npv.prev))
+## 				(is.logical(positive_first)) &
+## 				(is.null(ppv_npv_prev) | is.numeric(ppv_npv_prev))
 	
 ## 	# testa l'immissione
 ## 	if (!(ok.input)) {
 ##         stop(	"'test' and/or 'refstd' missing or not (factor |logical).\n",
-## 			 	"OR positive.first not logical\n",
-## 				"OR 'ppv.npv.prev'  not (null|numeric)"
+## 			 	"OR positive_first not logical\n",
+## 				"OR 'ppv_npv_prev'  not (null|numeric)"
 ## 				)
 ## 	}
 		
@@ -299,17 +293,17 @@ da <- function(test=NULL, refstd=NULL,
 ## 	# positive first handling
 ## 	# ora che ho estratto i dati da una forma tipica dell'elaborazione 
 ## 	# li metto in forma tipica per la stampa, se desiderato
-## 	tab.positive.first <- matrix(c(tab[2,2],tab[2,1], 
+## 	tab.positive_first <- matrix(c(tab[2,2],tab[2,1], 
 ## 							tab[1,2],tab[1,1]),
 ## 							ncol=2,	byrow=T,
 ## 					dimnames=list("test"=rev(levels(test)),
 ## 								"refstd"=rev(levels(refstd)) 
 ## 					))
-## 	class(tab.positive.first) <- class(tab)
+## 	class(tab.positive_first) <- class(tab)
 
-## 	# Table for results depends on positive.first
-## 	tab.for.results <- if (positive.first) {
-## 		tab.positive.first
+## 	# Table for results depends on positive_first
+## 	tab.for.results <- if (positive_first) {
+## 		tab.positive_first
 ## 	} else {
 ## 		tab
 ## 	}
@@ -363,15 +357,15 @@ da <- function(test=NULL, refstd=NULL,
 ## 	## Tutte e due le implementazioni del paper  disponibili.
 ## 	## Prima la standard logit, qui sotto, poi la adjusted logit
 
-## 	if( is.null(ppv.npv.prev) ) {
+## 	if( is.null(ppv_npv_prev) ) {
 ## 		# Se l'utente non ha specificato un valore di prevalenza, 
 ## 		# prendere quello del campione
 ## 		prev <- prevalence
-## 	} else if (is.numeric(ppv.npv.prev) & (ppv.npv.prev>=0 & ppv.npv.prev<=1 )){
+## 	} else if (is.numeric(ppv_npv_prev) & (ppv_npv_prev>=0 & ppv_npv_prev<=1 )){
 ## 		# Se invece l'ha specificato, posto che sia ragionevo
-## 		prev <- ppv.npv.prev
+## 		prev <- ppv_npv_prev
 ## 	} else {
-## 		stop("ppv.npv.prev must be NULL or numeric [0,1]")		
+## 		stop("ppv_npv_prev must be NULL or numeric [0,1]")		
 ## 	}	
 
 ## 	#### PPV standard logit
@@ -421,7 +415,7 @@ da <- function(test=NULL, refstd=NULL,
 ## 		c(youden, rep(NA,2))
 ## 	))
 	
-## 	stat <- round(stat,round.dig)
+## 	stat <- round(stat,digits)
 ## 	names(stat) <- c("Est","Low.CI", "Up.CI")
 ##     stat$stat <- c("Prevalence","Sensitivity",
 ## 					"Specificity","Accuracy",
@@ -442,7 +436,7 @@ da <- function(test=NULL, refstd=NULL,
 	
 ## 	## Example di mercaldo su alzheimer
 ##     ## db <- dadb(tn=288 , fn=178 ,fp =87 , tp=240)
-## 	## with(db, da2(test=test, refstd=refstd, ppv.npv.prev=.03))
+## 	## with(db, da2(test=test, refstd=refstd, ppv_npv_prev=.03))
 	
 
 ## }
