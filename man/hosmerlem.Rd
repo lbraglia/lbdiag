@@ -4,16 +4,14 @@
 \alias{hosmerlem}
 \title{Hosmer Lemeshow test}
 \usage{
-hosmerlem(y, yhat, g = 10)
+hosmerlem(mod, g = 10)
 }
 \arguments{
-\item{y}{factor with indicator variable}
-
-\item{yhat}{predicted probability}
+\item{mod}{glm (family = binomial) model}
 
 \item{g}{number of groups}
 }
 \description{
-Hosmer Lemeshow test for
+Hosmer Lemeshow test for logistic regression
 }
 

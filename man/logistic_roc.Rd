@@ -4,12 +4,10 @@
 \alias{logistic_roc}
 \title{Plot logistic model's ROC with AUC and confidence interval}
 \usage{
-logistic_roc(model, outcome)
+logistic_roc(mod)
 }
 \arguments{
-\item{model}{a glm (family = binomial) model}
-
-\item{outcome}{predicted outcome of the model}
+\item{mod}{a glm (family = binomial) model}
 }
 \description{
 Plot logistic model's ROC with AUC and confidence interval

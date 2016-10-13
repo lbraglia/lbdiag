@@ -1,12 +1,18 @@
 #' Hosmer Lemeshow test
 #'
-#' Hosmer Lemeshow test for
-#' @param y factor with indicator variable
-#' @param yhat predicted probability
+#' Hosmer Lemeshow test for logistic regression
+#' @param mod glm (family = binomial) model
+# #' @param y factor with indicator variable
+# #' @param yhat predicted probability
 #' @param g number of groups
 #' @export
-hosmerlem <- function(y, yhat, g = 10) {
-    y <- as.integer(y) - 1
+hosmerlem <- function(mod,
+                      ## y,
+                      ## yhat,
+                      g = 10) {
+    ## y <- as.integer(y) - 1
+    y <- mod$y
+    yhat <- stats::predict(mod, type = 'response')
     Breaks <- quantile(yhat, probs = seq(0, 1, 1/g)) 
     cutyhat <- cut(yhat, breaks = Breaks, include.lowest=TRUE)
     obs <- xtabs(cbind(1 - y, y) ~ cutyhat)
@@ -25,12 +31,11 @@ hosmerlem <- function(y, yhat, g = 10) {
 #' Plot logistic model's ROC with AUC and confidence interval
 #'
 #' Plot logistic model's ROC with AUC and confidence interval
-#' @param model a glm (family = binomial) model
-#' @param outcome predicted outcome of the model
+#' @param mod a glm (family = binomial) model
 #' @export
-logistic_roc <- function(model, outcome){
-    db <- data.frame(outcome = outcome)
-    db$pred <- stats::predict(model, type = 'response')
+logistic_roc <- function(mod){
+    db <- data.frame(outcome = mod$y)
+    db$pred <- stats::predict(mod, type = 'response')
     ROC <- pROC::roc(outcome ~ pred, data = db)
     pROC::plot.roc(ROC)
     AUC_CI <- pROC::ci.auc(ROC)
