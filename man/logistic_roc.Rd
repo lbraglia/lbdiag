@@ -12,4 +12,3 @@ logistic_roc(mod)
 \description{
 Plot logistic model's ROC with AUC and confidence interval
 }
-

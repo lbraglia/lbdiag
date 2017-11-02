@@ -43,4 +43,3 @@ db <- dadb(tn = 288, fn = 178 , fp = 87, tp = 240)
 with(db, da(test = test, refstd = refstd, ppv_npv_prev = .03))
 
 }
-

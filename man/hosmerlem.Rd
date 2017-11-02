@@ -14,4 +14,3 @@ hosmerlem(mod, g = 10)
 \description{
 Hosmer Lemeshow test for logistic regression
 }
-
