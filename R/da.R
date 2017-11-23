@@ -212,12 +212,9 @@ da <- function(test                = NULL,
     
     stat <- round(stat,digits)
     names(stat) <- c("Est","Low.CI", "Up.CI")
-    stat$stat <- c("Prevalence","Sensitivity",
-                   "Specificity","Accuracy",
-                   "PPV","NPV","OR","Youden")
-    ## riordino le variabili
-    stat <- stat[c(4,1:3)]
-
+    rownames(stat) <- c("Prevalence","Sensitivity",
+                        "Specificity","Accuracy",
+                        "PPV","NPV","OR","Youden")
     
     ## #####################   OUTPUT   ##########################
 		
