@@ -37,52 +37,38 @@ da <- function(test                = NULL,
 {
 
     ## Test input
-    test_refstd_ok <- function(x) (is.factor(x) && nlevels(x) == 2L) || is.logical(x)
-    if (!test_refstd_ok(test))
-        stop('test must be a logical or a factor with 2 levels')
-    if (!test_refstd_ok(refstd))
-        stop('refstd must be a logical or a factor with 2 levels')
+    test <- binary_preproc(test, "test")
+    refstd <- binary_preproc(test, "refstd")
 
-    ## TODO HERE
-    ok.input <- (is.factor(test) | is.logical(test)) & 
-        (is.factor(refstd) | is.logical(refstd)) &
-            (is.logical(positive_first)) &
-                (is.null(ppv_npv_prev) | is.numeric(ppv_npv_prev))
+    ## Test parametri rimanenti
+    ok.input <-
+        (is.logical(positive_first)) &
+        (is.null(ppv_npv_prev) || is.numeric(ppv_npv_prev))
     
     ## testa l'immissione
-    if (!(ok.input)) {
-        stop("'test' and/or 'refstd' missing or not (factor |logical).\n",
-             "OR positive_first not logical\n",
-             "OR 'ppv_npv_prev'  not (null|numeric)"
-             )
-    }
-		
-    ## Mette a posto i valori logici (trasformandoli in factor)
-    if (is.logical(test)) {
-        test <- factor(test, levels=c(FALSE, TRUE))
-    } 
-    if (is.logical(refstd)) {
-        refstd <- factor(refstd, levels=c(FALSE, TRUE))
-    }
-	
+    if (!ok.input)
+        stop("OR positive_first not logical\n",
+             "OR 'ppv_npv_prev'  not (null|numeric)")
+
+    
     ## ##############   TABLE ##########################
     
     ## Gestione delle label della tabella per la stampa
-    tab <- table(test,refstd)
-    tn <- tab[1,1]
-    tp <- tab[2,2]
-    fn <- tab[1,2]
-    fp <- tab[2,1]
+    tab <- table(test, refstd)
+    tn <- tab[1, 1]
+    tp <- tab[2, 2]
+    fn <- tab[1, 2]
+    fp <- tab[2, 1]
     
     ## positive first handling
     ## ora che ho estratto i dati da una forma tipica dell'elaborazione 
     ## li metto in forma tipica per la stampa, se desiderato
-    tab.positive_first <- matrix(c(tab[2,2],tab[2,1], 
-                                   tab[1,2],tab[1,1]),
-                                 ncol=2, byrow=T,
-                                 dimnames=list("test"=rev(levels(test)),
-                                     "refstd"=rev(levels(refstd)) 
-                                     ))
+    dn <- list("test" = rev(levels(test)), "refstd" = rev(levels(refstd)))
+    tab.positive_first <- matrix(c(tab[2,2], tab[2,1], 
+                                   tab[1,2], tab[1,1]),
+                                 ncol = 2,
+                                 byrow = TRUE,
+                                 dimnames = dn)
     class(tab.positive_first) <- class(tab)
 
     ## Table for results depends on positive_first
@@ -99,8 +85,9 @@ da <- function(test                = NULL,
     n.positive <- sum(tab[2,])
     n.negative <- sum(tab[1,])
     n <- sum(tab)
-    ## serve per il calcolo degli intervalli di confidenza di ppv npv
-    z <- qnorm(1-alpha/2)
+    
+    ## per il calcolo degli intervalli di confidenza di ppv npv
+    z <- qnorm(1 - alpha/2)
 
     ## prevalence
     prevalence <- n.diseased / n
@@ -115,7 +102,7 @@ da <- function(test                = NULL,
     specificity.ci <- (binom.test( tn, n.non.diseased, conf.level = 1 - alpha )$conf.int)[1:2]
 
     ## Accuracy
-    accuracy <- (tn+tp)/ n
+    accuracy    <- (tn+tp)/ n
     accuracy.ci <- (binom.test( tn+tp, n, conf.level = 1 - alpha )$conf.int)[1:2]
     
     
