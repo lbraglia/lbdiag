@@ -3,9 +3,5 @@ binary_preproc <- function(x, varname){
         msg <- sprintf("%s must be a logical or a factor with 2 levels", varname)
         stop(msg)
     }
-
-    if (is.logical(x)) {
-        factor(x, levels = c(FALSE, TRUE))
-    } else x
-    
+    if (is.logical(x)) factor(x, levels = c(FALSE, TRUE)) else x
 }

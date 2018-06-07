@@ -30,7 +30,7 @@ confidence interval)}
 Calculate diagnostic accuracy measures for binary measures (test,
 reference standard) and confidence intervals (two sided binomial
 for all the indexes except PPV and NPV, calculated via bdpv a-la
-Marcaldo)
+Mercaldo)
 }
 \examples{
 
