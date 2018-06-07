@@ -3,8 +3,9 @@
 #' @name lbdiag
 #' @docType package
 #' @importFrom bdpv BDtest
-#' @importFrom pROC roc
-#' @importFrom pROC ci.auc
-#' @importFrom stats predict
 #' @importFrom graphics legend
+#' @importFrom lbmisc NA_remove
+#' @importFrom pROC ci.auc
+#' @importFrom pROC roc
+#' @importFrom stats predict
 NULL

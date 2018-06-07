@@ -5,7 +5,7 @@ Authors@R: person('Luca', 'Braglia', email = 'lbraglia@gmail.com', role = c('aut
 Description: Diagnostic accuracy miscellaneous utilities.
 Depends:
     R (>= 3.2.3)
-Imports: bdpv, pROC, stats, graphics
+Imports: bdpv, lbmisc, pROC, stats, graphics
 URL: http://github.com/lbraglia/lbdiag
 BugReports: http://github.com/lbraglia/lbdiag/issues
 License: GPL-3

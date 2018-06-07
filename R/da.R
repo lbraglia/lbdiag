@@ -221,20 +221,37 @@ da <- function(test                = NULL,
 #' @param test2 new test, same coding as test1
 #' @param refstd reference standard diagnosis same coding as test1
 #' @param alpha Type I error
-
+#' @param boot_seed seed for random number generation (bootstrap for PV)
+#' @param boot_R bootstrap repetition
+#' @param boot_parallel use parallel 
+#' @param boot_ncpus number of cpus dedicated to bootstrapping
+#' @examples
+#' 
+#' db  <- dadb(tp = 70, fp = 20, fn = 30, tn = 80)
+#' db2 <- dadb(tp = 50, fp = 45, fn = 50, tn = 55)
+#' db$test2 <- db2$test
+#' ## test2 is worst than test
+#' acc <- da_compare(test1 = db$test, test2 = db$test2, refstd = db$refstd)
+#' 
+#' @export
 da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
-                       alpha = 0.05,
-                       test1_lab  = "Test 1",
-                       test2_lab  = "Test 2",
-                       refstd_lab = "Refence standard")
+                       alpha         = 0.05,
+                       boot_seed     = 621647321,
+                       boot_R        = 10000,
+                       boot_parallel = 'multicore',
+                       boot_ncpus    = 8L)
 {
-
+    
     test1  <- binary_preproc(test1, "test1")
     test2  <- binary_preproc(test2, "test2")
     refstd <- binary_preproc(refstd, "refstd")
 
     db <- lbmisc::NA_remove(data.frame(test1, test2, refstd))
     nunits <- nrow(db)
+
+    ## single tests performances
+    da_test1 <- da(test = db$test1, refstd = db$refstd, alpha = alpha)
+    da_test2 <- da(test = db$test2, refstd = db$refstd, alpha = alpha)
     
     group <- function(t, r, postfix){
 
@@ -274,32 +291,86 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
     negative     <- db$refstd == levels(db$refstd)[1]
     diseased     <- c("tp", "fn")
     not_diseased <- c("tn", "fp")
+
+    ## db at this point is like this  
     
+    ##   test1 test2 refstd group_1 correct_1 group_2 correct_2
+    ## 1     -     - absent      tn   Correct      tn   Correct
+    ## 2     -     - absent      tn   Correct      tn   Correct
+    ## 3     -     - absent      tn   Correct      tn   Correct
+    ## 4     -     - absent      tn   Correct      tn   Correct
+
+    ## ----------------------------------------
+    ## tables for bonett_price (Sens, Spec, Acc
+    ## ----------------------------------------
     sens_tab <- with(db[positive, ], {
         ## per mantenere costante la struttura indipendentemente dai
         ## dati specifico i livelli
-        table(factor(group_1, levels = diseased),
-              factor(group_2, levels = diseased))
+        table(factor(group_1, levels = diseased), factor(group_2, levels = diseased))
     })
 
     spec_tab <- with(db[negative, ], {
-        table(factor(group_1, levels = not_diseased),
-              factor(group_2, levels = not_diseased))
+        table(factor(group_1, levels = not_diseased), factor(group_2, levels = not_diseased))
     })
 
     acc_tab <- with(db, table(correct_1, correct_2))
 
-    tabs <- list("sens" = sens_tab, "spec" = spec_tab, "acc" = acc_tab)
+    tabs <- list("Sensitivity" = sens_tab,
+                 "Specificity" = spec_tab,
+                 "Accuracy"    = acc_tab)
     cis <- lapply(tabs, function(x)
-        # qui li devo fare reversed per avere test2 - test1
+        # qui li devo fare reversed per avere test2 - test1 (invece che test1 - test2)
         bonett_price(n12 = x[2,1],
                      n21 = x[1,2],
                      N = sum(x),
                      alpha = alpha))
+    cis <- do.call(rbind, cis)
 
-    do.call(rbind, cis)
+    ## -----------------------
+    ## PPV and NPV (bootstrap
+    ## -----------------------
+    ## http://www.statmethods.net/advstats/bootstrapping.html
+    ## https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
+    
+    pv <- function(x){# x is a vector of tp, fp, fn, tn
+        ppv <- sum(x %in% 'tp')/sum(x %in% c('tp', 'fp'))
+        npv <- sum(x %in% 'tn')/sum(x %in% c('tn', 'fn'))
+        c("ppv" = ppv, "npv" = npv)
+    }
+
+    pv2 <- pv(db$group_2)
+    pv1 <- pv(db$group_1)
+    pv_diff <- pv2 - pv1
+
+    boot_pv <- function(data, indexes){
+        d <- data[indexes, ]
+        pv2 <- pv(d$group_2)
+        pv1 <- pv(d$group_1)
+        pv2 - pv1
+    }
+    
+    set.seed(boot_seed)
+    pv_boot <- boot::boot(data = db,
+                          statistic = boot_pv,
+                          R = boot_R,
+                          parallel = boot_parallel,
+                          ncpus = boot_ncpus)
+
+    extract <- function(x) x$bca[1, 4:5]
+    ppv_diff_ci <- extract(boot::boot.ci(pv_boot, type = 'bca', index = 1)) ## ppv
+    npv_diff_ci <- extract(boot::boot.ci(pv_boot, type = 'bca', index = 2)) ## npv
+
+    ## add estimate and set names
+    ppv_diff_ci <- setNames(c(pv_diff["ppv"], ppv_diff_ci), c('Difference', 'Lower.CI', 'Upper.CI'))
+    npv_diff_ci <- setNames(c(pv_diff["npv"], npv_diff_ci), c('Difference', 'Lower.CI', 'Upper.CI'))
+    pvs <- do.call(rbind, list('PPV' = ppv_diff_ci, 'NPV' = npv_diff_ci))
+    cis <- rbind(cis, pvs)
+                              
+    ## -----------------------
+    ## Return
+    ## -----------------------
+    list("test1" = da_test1, "test2" = da_test2, "diffs" = cis)
 }
-
 
 
 #' Confidence interval for the difference between two
@@ -337,7 +408,5 @@ bonett_price <- function(n12, n21, N, alpha = 0.05){
     est <- (n12 - n21) / N
     lower <- max(pdiff - z * se, -1L)
     upper <- min(pdiff + z * se, +1L)
-    c('difference' = est, 'lower' = lower, 'upper' = upper)
+    c('Difference' = est, 'Low.CI' = lower, 'Up.CI' = upper)
 }
-
-
