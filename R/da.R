@@ -221,7 +221,6 @@ da <- function(test                = NULL,
 #' @param test2 new test, same coding as test1
 #' @param refstd reference standard diagnosis same coding as test1
 #' @param alpha Type I error
-#' @param boot_seed seed for random number generation (bootstrap for PV)
 #' @param boot_R bootstrap repetition
 #' @param boot_parallel use parallel 
 #' @param boot_ncpus number of cpus dedicated to bootstrapping
@@ -236,7 +235,6 @@ da <- function(test                = NULL,
 #' @export
 da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
                        alpha         = 0.05,
-                       boot_seed     = 621647321,
                        boot_R        = 10000,
                        boot_parallel = 'multicore',
                        boot_ncpus    = 8L)
@@ -349,7 +347,6 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
         pv2 - pv1
     }
     
-    set.seed(boot_seed)
     pv_boot <- boot::boot(data = db,
                           statistic = boot_pv,
                           R = boot_R,

@@ -7,8 +7,7 @@ in a paired setting (each test evaluated each patients) having a
 reference tandard}
 \usage{
 da_compare(test1 = NULL, test2 = NULL, refstd = NULL, alpha = 0.05,
-  test1_lab = "Test 1", test2_lab = "Test 2",
-  refstd_lab = "Refence standard")
+  boot_R = 10000, boot_parallel = "multicore", boot_ncpus = 8L)
 }
 \arguments{
 \item{test1}{oldest test available, logical value with FALSE = non
@@ -19,9 +18,24 @@ diseased and TRUE diseased or factor with two levels}
 \item{refstd}{reference standard diagnosis same coding as test1}
 
 \item{alpha}{Type I error}
+
+\item{boot_R}{bootstrap repetition}
+
+\item{boot_parallel}{use parallel}
+
+\item{boot_ncpus}{number of cpus dedicated to bootstrapping}
 }
 \description{
 compare diagnostic accuracy measures for 2 binary tests evaluated
 in a paired setting (each test evaluated each patients) having a
 reference tandard
+}
+\examples{
+
+db  <- dadb(tp = 70, fp = 20, fn = 30, tn = 80)
+db2 <- dadb(tp = 50, fp = 45, fn = 50, tn = 55)
+db$test2 <- db2$test
+## test2 is worst than test
+acc <- da_compare(test1 = db$test, test2 = db$test2, refstd = db$refstd)
+
 }
