@@ -219,6 +219,8 @@ da <- function(test                = NULL,
 #' @param test1 oldest test available, logical value with FALSE = non
 #'     diseased and TRUE diseased or factor with two levels
 #' @param test2 new test, same coding as test1
+#' @param test1_lab test 1 label/name
+#' @param test2_lab test 2 label/name
 #' @param refstd reference standard diagnosis same coding as test1
 #' @param alpha Type I error
 #' @param boot_R bootstrap repetition
@@ -234,14 +236,16 @@ da <- function(test                = NULL,
 #' 
 #' @export
 da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
+                       test1_lab     = 'test1',
+                       test2_lab     = 'test2',
                        alpha         = 0.05,
                        boot_R        = 10000,
                        boot_parallel = 'multicore',
                        boot_ncpus    = 8L)
 {
     
-    test1  <- binary_preproc(test1, "test1")
-    test2  <- binary_preproc(test2, "test2")
+    test1  <- binary_preproc(test1,  "test1")
+    test2  <- binary_preproc(test2,  "test2")
     refstd <- binary_preproc(refstd, "refstd")
 
     db <- lbmisc::NA_remove(data.frame(test1, test2, refstd))
@@ -366,7 +370,9 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
     ## -----------------------
     ## Return
     ## -----------------------
-    list("test1" = da_test1, "test2" = da_test2, "diffs" = cis)
+    rval <- list("test1" = da_test1, "test2" = da_test2, "diffs" = cis)
+    names(rval)[1:2] <- c(test1_lab, test2_lab)
+    rval
 }
 
 

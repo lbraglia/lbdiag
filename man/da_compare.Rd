@@ -6,7 +6,8 @@
 in a paired setting (each test evaluated each patients) having a
 reference tandard}
 \usage{
-da_compare(test1 = NULL, test2 = NULL, refstd = NULL, alpha = 0.05,
+da_compare(test1 = NULL, test2 = NULL, refstd = NULL,
+  test1_lab = "test1", test2_lab = "test2", alpha = 0.05,
   boot_R = 10000, boot_parallel = "multicore", boot_ncpus = 8L)
 }
 \arguments{
@@ -16,6 +17,10 @@ diseased and TRUE diseased or factor with two levels}
 \item{test2}{new test, same coding as test1}
 
 \item{refstd}{reference standard diagnosis same coding as test1}
+
+\item{test1_lab}{test 1 label/name}
+
+\item{test2_lab}{test 2 label/name}
 
 \item{alpha}{Type I error}
 
