@@ -308,11 +308,13 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
     sens_tab <- with(db[positive, ], {
         ## per mantenere costante la struttura indipendentemente dai
         ## dati specifico i livelli
-        table(factor(group_1, levels = diseased), factor(group_2, levels = diseased))
+        table(factor(group_1, levels = diseased),
+              factor(group_2, levels = diseased))
     })
 
     spec_tab <- with(db[negative, ], {
-        table(factor(group_1, levels = not_diseased), factor(group_2, levels = not_diseased))
+        table(factor(group_1, levels = not_diseased),
+              factor(group_2, levels = not_diseased))
     })
 
     acc_tab <- with(db, table(correct_1, correct_2))
@@ -321,13 +323,17 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
                  "Specificity" = spec_tab,
                  "Accuracy"    = acc_tab)
     cis <- lapply(tabs, function(x)
-        # qui li devo fare reversed per avere test2 - test1 (invece che test1 - test2)
+        ## qui li devo fare reversed per avere test2 - test1 (invece
+        ## che test1 - test2)
         bonett_price(n12 = x[2,1],
                      n21 = x[1,2],
                      N = sum(x),
                      alpha = alpha))
     cis <- do.call(rbind, cis)
 
+    mcnemar <- lapply(tabs,function(t) stats::mcnemar.test(x = t)$p.value)
+    mcnemar <- unlist(mcnemar)
+                      
     ## -----------------------
     ## PPV and NPV (bootstrap
     ## -----------------------
@@ -370,7 +376,8 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
     ## -----------------------
     ## Return
     ## -----------------------
-    rval <- list("test1" = da_test1, "test2" = da_test2, "diffs" = cis)
+    rval <- list("test1" = da_test1, "test2" = da_test2,
+                 "diffs" = cis, "mcnemar" = mcnemar)
     names(rval)[1:2] <- c(test1_lab, test2_lab)
     rval
 }

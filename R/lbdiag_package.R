@@ -4,6 +4,7 @@
 #' @docType package
 #' @importFrom bdpv BDtest
 #' @importFrom graphics legend
+#' @importFrom stats mcnemar.test
 #' @importFrom lbmisc NA_remove
 #' @importFrom pROC ci.auc
 #' @importFrom pROC roc
