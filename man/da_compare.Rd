@@ -8,7 +8,8 @@ reference tandard}
 \usage{
 da_compare(test1 = NULL, test2 = NULL, refstd = NULL,
   test1_lab = "test1", test2_lab = "test2", alpha = 0.05,
-  boot_R = 10000, boot_parallel = "multicore", boot_ncpus = 8L)
+  boot_R = 10000, da_params = list(), boot_parallel = "multicore",
+  boot_ncpus = 8L)
 }
 \arguments{
 \item{test1}{oldest test available, logical value with FALSE = non

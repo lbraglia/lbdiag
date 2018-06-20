@@ -240,6 +240,7 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
                        test2_lab     = 'test2',
                        alpha         = 0.05,
                        boot_R        = 10000,
+                       da_params     = list(),
                        boot_parallel = 'multicore',
                        boot_ncpus    = 8L)
 {
@@ -251,9 +252,26 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
     db <- lbmisc::NA_remove(data.frame(test1, test2, refstd))
     nunits <- nrow(db)
 
+    ## avoid wrong (duplicated) specifications of parameters
+    accepted_further_params <- c("digits", "positive_first",
+                                 "ppv_npv_prev", "ppv_npv_force_unadj")
+    params <- names(da_params) %in% accepted_further_params
+    da_params <- da_params[params]
+    
     ## single tests performances
-    da_test1 <- da(test = db$test1, refstd = db$refstd, alpha = alpha)
-    da_test2 <- da(test = db$test2, refstd = db$refstd, alpha = alpha)
+    test1_param <- c(list("test" = db$test1,
+                          "refstd" = db$refstd,
+                          "alpha" = alpha),
+                     da_params)
+    test2_param <- c(list("test" = db$test1,
+                          "refstd" = db$refstd,
+                          "alpha" = alpha),
+                     da_params)
+    da_test1 <- do.call(da, test1_param)
+    da_test2 <- do.call(da, test2_param)
+    
+    ## da_test1 <- da(test = db$test1, refstd = db$refstd, alpha = alpha)
+    ## da_test2 <- da(test = db$test2, refstd = db$refstd, alpha = alpha)
     
     group <- function(t, r, postfix){
 
@@ -335,7 +353,7 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
     mcnemar <- unlist(mcnemar)
                       
     ## -----------------------
-    ## PPV and NPV (bootstrap
+    ## PPV and NPV (bootstrap)
     ## -----------------------
     ## http://www.statmethods.net/advstats/bootstrapping.html
     ## https://en.wikipedia.org/wiki/Bootstrapping_(statistics)
