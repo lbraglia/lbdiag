@@ -263,7 +263,7 @@ da_compare <- function(test1 = NULL, test2 = NULL, refstd = NULL,
                           "refstd" = db$refstd,
                           "alpha" = alpha),
                      da_params)
-    test2_param <- c(list("test" = db$test1,
+    test2_param <- c(list("test" = db$test2,
                           "refstd" = db$refstd,
                           "alpha" = alpha),
                      da_params)
