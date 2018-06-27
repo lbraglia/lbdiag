@@ -23,8 +23,9 @@ standard in first row column}
 \item{ppv_npv_prev}{prevalence adopted for ppv and npv confidence
 interval (if NULL it's estimated from sample)}
 
-\item{ppv_npv_force_unadj}{logical: force unadjusted ppv npv estimates (and
-confidence interval)}
+\item{ppv_npv_force_unadj}{force unadjusted (standard logit) ppv
+npv estimates (and confidence interval) if at least one between
+NPV or PPV is 0 or 1}
 }
 \description{
 Calculate diagnostic accuracy measures for binary measures (test,

@@ -14,8 +14,9 @@
 #'     standard in first row column
 #' @param ppv_npv_prev prevalence adopted for ppv and npv confidence
 #'     interval (if NULL it's estimated from sample)
-#' @param ppv_npv_force_unadj logical: force unadjusted ppv npv estimates (and
-#'     confidence interval)
+#' @param ppv_npv_force_unadj force unadjusted (standard logit) ppv
+#'     npv estimates (and confidence interval) if at least one between
+#'     NPV or PPV is 0 or 1
 #' @examples
 #' 
 #' ## CASS Example (Pepe pag 22)
@@ -136,9 +137,16 @@ da <- function(test                = NULL,
     } else {
         stop("ppv_npv_prev must be NULL or numeric [0,1]")		
     }	
-	
-    if (all(tab>0) | ( any(tab==0) & (ppv_npv_force_unadj==TRUE)) ) {
+
+    ## below if there is a 0 in the 2x2 table, then one between NPV or
+    ## PPV have to be 0 or 1, so therefore Mercaldo suggests using
+    ## adjusted (plain, not logit method) nonetheless one can force to
+    ## stay unadjusted (for whatever reason)
+
+    if (all(tab > 0) || (any(tab == 0) && (ppv_npv_force_unadj==TRUE))) {
+        ## -------------------------------------------
         ## PPV NPV standard logit estimates (mercaldo)
+        ## -------------------------------------------
         
         ## PPV standard logit
         ppv <- (sensitivity*prev)/((sensitivity*prev) + (1-specificity)*(1-prev) )
@@ -170,7 +178,9 @@ da <- function(test                = NULL,
         
     } else {
 	
+        ## -------------------------------------------
         ## PPV NPV adjusted logit estimates (mercaldo)
+        ## -------------------------------------------
         xmat <- unname(as.matrix(tab.positive_first))
         class(xmat) <- "matrix"
         pv.tmp <- bdpv::BDtest(xmat = xmat, 
