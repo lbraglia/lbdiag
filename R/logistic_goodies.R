@@ -32,15 +32,25 @@ hosmerlem <- function(mod,
 #'
 #' Plot logistic model's ROC with AUC and confidence interval
 #' @param mod a glm (family = binomial) model
+#' @param plot wheter to plot or not the graph
+#' @param add add the roc to a previous existing one
+#' @param legend_auc add a legend with the AUC and confidence interval
+#' @param ... further params passed to plot.roc
 #' @export
-logistic_roc <- function(mod){
+logistic_roc <- function(mod, plot = TRUE, add = FALSE,
+                         legend_auc = TRUE, ...)
+{
     db <- data.frame(outcome = mod$y)
     db$pred <- stats::predict(mod, type = 'response')
     ROC <- pROC::roc(outcome ~ pred, data = db)
-    pROC::plot.roc(ROC)
     AUC_CI <- pROC::ci.auc(ROC)
-    leg <- sprintf("AUC = %.3f (%.3f - %.3f)",
-                   AUC_CI[2], AUC_CI[1], AUC_CI[3])
-    graphics::legend(0.8, 0.2, legend = leg)
-    invisible(ROC)
+    if (plot) {
+        pROC::plot.roc(ROC, add = add, ...)
+        if (legend_auc) {
+            leg <- sprintf("AUC = %.3f (%.3f - %.3f)",
+                           AUC_CI[2], AUC_CI[1], AUC_CI[3])
+            graphics::legend(0.8, 0.2, legend = leg)
+        }
+    }
+    invisible(list("roc" = ROC, "auc" = AUC_CI))
 }
