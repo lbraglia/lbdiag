@@ -10,6 +10,10 @@ hosmerlem(mod, g = 10)
 \item{mod}{glm (family = binomial) model}
 
 \item{g}{number of groups}
+
+\item{y}{factor with indicator variable}
+
+\item{yhat}{predicted probability}
 }
 \description{
 Hosmer Lemeshow test for logistic regression

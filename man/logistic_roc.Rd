@@ -4,10 +4,18 @@
 \alias{logistic_roc}
 \title{Plot logistic model's ROC with AUC and confidence interval}
 \usage{
-logistic_roc(mod)
+logistic_roc(mod, plot = TRUE, add = FALSE, legend_auc = TRUE, ...)
 }
 \arguments{
 \item{mod}{a glm (family = binomial) model}
+
+\item{plot}{wheter to plot or not the graph}
+
+\item{add}{add the roc to a previous existing one}
+
+\item{legend_auc}{add a legend with the AUC and confidence interval}
+
+\item{...}{further params passed to plot.roc}
 }
 \description{
 Plot logistic model's ROC with AUC and confidence interval
