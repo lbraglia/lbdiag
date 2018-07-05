@@ -5,7 +5,8 @@
 \title{ROC graph with boxplot below}
 \usage{
 roc_with_boxplot(test, refstd, direction = c("auto", "<", ">"),
-  layout_heights = c(3.5, 1), oma = c(0, 0, 0, 0), mar = c(4, 6, 0, 2))
+  layout_heights = c(3, 1), oma = c(0, 0, 0, 0), mar = c(4, 6, 0, 0) +
+  0.1)
 }
 \arguments{
 \item{test}{Marker}

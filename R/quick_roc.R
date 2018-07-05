@@ -76,7 +76,7 @@ quick_roc <- function(test = NULL,
 #' @export
 roc_with_boxplot <- function(test, refstd,
                              direction = c("auto", "<", ">"),
-                             layout_heights = c(3.5, 1),
+                             layout_heights = c(3, 1),
                              oma = c(0, 0, 0, 0),
                              mar = c(4, 6, 0, 0) + 0.1
                              )
