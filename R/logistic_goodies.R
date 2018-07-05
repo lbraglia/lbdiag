@@ -70,9 +70,10 @@ logistic_roc <- function(mod, plot = TRUE, add = FALSE,
 #' @param legend_style covariates_auc for the right hand formula and
 #'     auc, numbers_auc for number between parenthesis and auc, none
 #'     for avoiding printing legend
-#' @param test_style AvsC for comparing all the models to the one with
-#'     only one covariate, BcsC to compare the models with the one
-#'     identical excepting for the last covariate added
+#' @param test_style all_combs for testing all the combinations, AvsC
+#'     for comparing all the models to the one with only one
+#'     covariate, BcsC to compare the models with the one identical
+#'     excepting for the last covariate added
 #' @param test_param list of parameter to be passed to pROC::roc.test
 #' @source idea in Knottnerus Buntinx (editors), Evidence base of
 #'     clinical diagnosis, 2008, Wiley Blackwell, pag 157
@@ -83,7 +84,7 @@ added_da <- function(formula, data,
                    col = 'black', 
                    lty = 1,
                    legend_style = c('covariates_auc', 'numbers_auc', 'none'),
-                   test_style = c("BvsC", "AvsC"),
+                   test_style = c("all_combs", "BvsC", "AvsC"),
                    test_param = list())
 {
     ## todo:
@@ -118,12 +119,26 @@ added_da <- function(formula, data,
                      lty = l)
     rocs <- Map(roc_maker, models, as.list(add), as.list(col), as.list(lty))
     ## tests comparing models
-    base_index <- if (test_style == "AvsC") 1
-                  else if (test_style == "BvsC") -length(rocs)
-                  else stop("here test_style should be one of AvsC or BvsC")
+    if (test_style == 'all_combs'){
+        all_combs_indexes <- combn(seq_along(rocs), 2)
+        base_index       <- all_combs_indexes[1, ]
+        comparison_index <- all_combs_indexes[2, ]
+    }
+    else if (test_style == "AvsC"){
+        base_index       <- 1
+        comparison_index <- -1
+    }
+    else if (test_style == "BvsC") {
+        base_index       <- -length(rocs)
+        comparison_index <- -1
+    }
+    else {
+        stop("here test_style should be one of AvsC or BvsC")
+    }
+    
     roc_selector <- function(x) x$roc
-    test_base <- lapply(rocs[base_index], roc_selector)
-    test_comparison <- lapply(rocs[-1], roc_selector)
+    test_base       <- lapply(rocs[base_index], roc_selector)
+    test_comparison <- lapply(rocs[comparison_index], roc_selector)
     roc_comparator <- function(x, y, xmod, ymod){
         test_param <- c(list("roc1" = x, "roc2" = y), test_param)
         test <- do.call(pROC::roc.test, test_param)

@@ -71,20 +71,21 @@ quick_roc <- function(test = NULL,
 #' @param refstd Reference standard (binary variable)
 #' @param direction Charachter. Direction passed to \code{pROC::roc}
 #' @param layout_heights layout heights for roc/boxplot image proportions
-# #' @param mar mar parameter
+#' @param oma oma parameter
+#' @param mar mar parameter
 #' @export
 roc_with_boxplot <- function(test, refstd,
                              direction = c("auto", "<", ">"),
-                             layout_heights = c(3.5, 1)## ,
-                             ## mar = c(4, 6, 0, 2)
+                             layout_heights = c(3.5, 1),
+                             oma = c(0, 0, 0, 0),
+                             mar = c(4, 6, 0, 0) + 0.1
                              )
 {
     oldpar <- par(no.readonly = TRUE)
     on.exit(par(oldpar))
     direction <- match.arg(direction)
     layout(mat = matrix(1:2), heights = layout_heights)
-    ## par(oma = c(0,0,0,0)## , mar = mar
-    ##     )
+    par(oma = oma, mar = mar)
     roc <- quick_roc(test = test, refstd = refstd, direction = direction)
     cutoff <- roc$best.thresh
     bp <- boxplot(test ~ refstd, 

@@ -11,7 +11,7 @@ idea in Knottnerus Buntinx (editors), Evidence base of
 \usage{
 added_da(formula, data, plot_roc = TRUE, col = "black", lty = 1,
   legend_style = c("covariates_auc", "numbers_auc", "none"),
-  test_style = c("BvsC", "AvsC"), test_param = list())
+  test_style = c("all_combs", "BvsC", "AvsC"), test_param = list())
 }
 \arguments{
 \item{formula}{a glm full formula}
@@ -28,9 +28,10 @@ added_da(formula, data, plot_roc = TRUE, col = "black", lty = 1,
 auc, numbers_auc for number between parenthesis and auc, none
 for avoiding printing legend}
 
-\item{test_style}{AvsC for comparing all the models to the one with
-only one covariate, BcsC to compare the models with the one
-identical excepting for the last covariate added}
+\item{test_style}{all_combs for testing all the combinations, AvsC
+for comparing all the models to the one with only one
+covariate, BcsC to compare the models with the one identical
+excepting for the last covariate added}
 
 \item{test_param}{list of parameter to be passed to pROC::roc.test}
 }
