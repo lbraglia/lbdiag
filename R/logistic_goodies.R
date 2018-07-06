@@ -64,6 +64,8 @@ logistic_roc <- function(mod, plot = TRUE, add = FALSE,
 #'
 #' @param formula a glm full formula
 #' @param data data.frame
+#' @param perm_tests_sequence permutate model covariate sequence (checking
+#'     all possible models/sequences given the covariates specified)
 #' @param plot_roc plot the overlapping rocs of the models estimated
 #' @param col color of the rocs
 #' @param lty lty of the rocs
@@ -79,13 +81,14 @@ logistic_roc <- function(mod, plot = TRUE, add = FALSE,
 #'     clinical diagnosis, 2008, Wiley Blackwell, pag 157
 #' 
 #' @export
-added_da <- function(formula, data, 
-                   plot_roc = TRUE,
-                   col = 'black', 
-                   lty = 1,
-                   legend_style = c('covariates_auc', 'numbers_auc', 'none'),
-                   test_style = c("all_combs", "BvsC", "AvsC"),
-                   test_param = list())
+added_da <- function(formula, data,
+                     perm_test_sequence = FALSE,
+                     plot_roc = TRUE,
+                     col = 'black', 
+                     lty = 1,
+                     legend_style = c('covariates_auc', 'numbers_auc', 'none'),
+                     test_style = c("all_combs", "BvsC", "AvsC"),
+                     test_param = list())
 {
     ## todo:
     ## - un domani: altro stile legenda che metta in luce la variabile
@@ -95,50 +98,51 @@ added_da <- function(formula, data,
     test_style <- match.arg(test_style)
     all_vars <- all.vars(formula)
     data <- lbmisc::NA_remove(data[, all_vars])
-    outcome <- all_vars[1]
-    covariates <- all_vars[-1]
-    indexes <- lapply(seq_along(covariates), seq)
-    covariates <- lapply(indexes, function(i){
-        paste0(covariates[i], collapse = ' + ')
+
+    vars <- if (perm_test_sequence){
+                lapply(combinat::permn(all_vars[-1]),
+                       function(x) c(all_vars[1], x))
+            } else {
+                list(all_vars)
+            }
+
+    vars_sequences <-  lapply(vars, function(v){
+        paste(v[-1], collapse = '->')
     })
-    formulas <- lapply(covariates, function(x){
-        formula(paste0(outcome, '~', x))
-    })
-    names(formulas) <- covariates
-    models <- lapply(formulas, function(f) {
-      glm(formula = f, data = data, family = binomial)  
-    })
-    ## add only if it's not the first graph
-    add <- c(FALSE, rep(TRUE, length(models) - 1))
-    roc_maker <- function(m, a, c, l)
-        logistic_roc(mod = m, 
-                     plot = plot_roc, 
-                     add = a,
-                     legend_auc = FALSE,
-                     col = c,
-                     lty = l)
-    rocs <- Map(roc_maker, models, as.list(add), as.list(col), as.list(lty))
-    ## tests comparing models
-    if (test_style == 'all_combs'){
-        all_combs_indexes <- combn(seq_along(rocs), 2)
-        base_index       <- all_combs_indexes[1, ]
-        comparison_index <- all_combs_indexes[2, ]
-    }
-    else if (test_style == "AvsC"){
-        base_index       <- 1
-        comparison_index <- -1
-    }
-    else if (test_style == "BvsC") {
-        base_index       <- -length(rocs)
-        comparison_index <- -1
-    }
-    else {
-        stop("here test_style should be one of AvsC or BvsC")
-    }
+    names(vars) <- paste('Seq:', vars_sequences)
+
+    ## now some utility functions
     
+    ## make_formulas creates the incremental sequence of formulas given
+    ## a specified char with outcome var1 var2 ... varn: that is
+    ## "outcome ~ var1", "outcome ~ var1 + var2", and so on till
+    ## "outcome ~ var1 + var2 + ... + varn"
+    make_formulas <- function(v){# vars is char with 
+        outcome <- v[1]
+        covariates <- v[-1]
+        indexes <- lapply(seq_along(covariates), seq)
+        covariates <- lapply(indexes, function(i){
+            paste0(covariates[i], collapse = ' + ')
+        })
+        formulas <- lapply(covariates, function(x){
+            formula(paste0(outcome, '~', x))
+        })
+        names(formulas) <- covariates
+        formulas
+    }
+
+    ## the roc (estimates/plot) maker given  a logistic model
+    roc_maker <- function(m, a, c, l) logistic_roc(mod = m, 
+                                                   plot = plot_roc, 
+                                                   add = a,
+                                                   legend_auc = FALSE,
+                                                   col = c,
+                                                   lty = l)
+
+    ## roc_selector from the output of logistic_log
     roc_selector <- function(x) x$roc
-    test_base       <- lapply(rocs[base_index], roc_selector)
-    test_comparison <- lapply(rocs[comparison_index], roc_selector)
+
+    ## the function comparing two rocs
     roc_comparator <- function(x, y, xmod, ymod){
         test_param <- c(list("roc1" = x, "roc2" = y), test_param)
         test <- do.call(pROC::roc.test, test_param)
@@ -146,38 +150,82 @@ added_da <- function(formula, data,
                                  'vs model with', ymod)
         test
     }
-    tests <- Map(roc_comparator, test_base, test_comparison,
-                 as.list(names(test_base)), as.list(names(test_comparison)))
-    names(tests) <- paste(names(test_base), 'vs', names(test_comparison))
-    ## plotting
-    if (plot_roc && legend_style != 'none'){
-        legend_maker <- function(roc, prefix) {
-            auc <- roc$auc
-            sprintf("%s AUC: %.2f (%.2f - %.2f)", 
-                    prefix, auc[2], auc[1], auc[3])
-        }
-        if (legend_style == 'covariates_auc'){
-            prefixes <- paste(unlist(covariates), ' - ')
-        } else if (legend_style == 'numbers_auc'){
-            prefixes <- paste0('(', seq_along(rocs), ')')
-        } else 
-            stop("legend_style here should be one ",
-                 "of covariates_auc or numbers_auc")
-        legends <- unlist(Map(legend_maker, rocs, as.list(prefixes)))
-        ## legend right alignment here, see ?legend example
-        longest_legend <- legends[which.max(nchar(legends))]
-        # browser()
-        temp <- legend("bottomright", 
-                       legend = rep(" ", length(rocs)),
-                       ## qui metto il reverse perché l'asse x è invertito!
-                       text.width = - strwidth(longest_legend),
-                       bty = 'n', #do not draw the box
-                       col = col, 
-                       lty = lty, 
-                       xjust = 1, yjust = 1)
-        text(temp$rect$left + temp$rect$w, temp$text$y,
-             legends, 
-             pos = 2)
+
+    ## given a roc and a prefix
+    legend_maker <- function(roc, prefix) {
+        auc <- roc$auc
+        sprintf("%s AUC: %.2f (%.2f - %.2f)", 
+                prefix, auc[2], auc[1], auc[3])
     }
-    invisible(list("rocs" = rocs, "tests" = tests))
+    
+    ## this does the estimates and plotting for each sequence of marker
+    analysis <- function(var_seq){
+        ## get the specific formulas for each test sequence
+        formulas <- make_formulas(v = var_seq)
+        models <- lapply(formulas, function(f) {
+            glm(formula = f, data = data, family = binomial)
+        })
+    
+        ## add only if it's not the first graph
+        add <- c(FALSE, rep(TRUE, length(models) - 1))
+        rocs <- Map(roc_maker, models,
+                    as.list(add), as.list(col), as.list(lty))
+
+        ## tests comparing models
+        if (test_style == 'all_combs'){
+            all_combs_indexes <- combn(seq_along(rocs), 2)
+            base_index        <- all_combs_indexes[1, ]
+            comparison_index  <- all_combs_indexes[2, ]
+        } else if (test_style == "AvsC"){
+            base_index       <- 1
+            comparison_index <- -1
+        } else if (test_style == "BvsC") {
+            base_index       <- -length(rocs)
+            comparison_index <- -1
+        }
+        else {
+            stop("here test_style should be one of AvsC or BvsC")
+        }
+        
+        test_base       <- lapply(rocs[base_index], roc_selector)
+        test_comparison <- lapply(rocs[comparison_index], roc_selector)
+        tests <- Map(roc_comparator, test_base, test_comparison,
+                     as.list(names(test_base)),
+                     as.list(names(test_comparison)))
+        names(tests) <- paste(names(test_base), 'vs', names(test_comparison))
+
+        ## plotting
+        if (plot_roc && legend_style != 'none'){
+            if (legend_style == 'covariates_auc'){
+                prefixes <- paste(names(rocs), ' - ')
+            } else if (legend_style == 'numbers_auc'){
+                prefixes <- paste0('(', seq_along(rocs), ')')
+            } else 
+                stop("legend_style here should be one ",
+                     "of covariates_auc or numbers_auc")
+            legends <- unlist(Map(legend_maker, rocs, as.list(prefixes)))
+            ## legend right alignment here, see ?legend example
+            longest_legend <- legends[which.max(nchar(legends))]
+                                        # browser()
+            temp <- legend("bottomright", 
+                           legend = rep(" ", length(rocs)),
+                           ## qui metto il reverse perché l'asse x è invertito!
+                           text.width = - strwidth(longest_legend),
+                           bty = 'n', #do not draw the box
+                           col = col, 
+                           lty = lty, 
+                           xjust = 1, yjust = 1)
+            text(temp$rect$left + temp$rect$w, temp$text$y,
+                 legends, 
+                 pos = 2)
+        }
+        invisible(list("rocs" = rocs, "tests" = tests))
+
+    }
+
+    rval <- lapply(vars, analysis)
+
+    ## if only one sequence tested, simplify by default
+    if (length(rval) == 1) rval[[1]] else rval
+
 }

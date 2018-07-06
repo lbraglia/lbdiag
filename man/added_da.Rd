@@ -9,9 +9,10 @@ idea in Knottnerus Buntinx (editors), Evidence base of
     clinical diagnosis, 2008, Wiley Blackwell, pag 157
 }
 \usage{
-added_da(formula, data, plot_roc = TRUE, col = "black", lty = 1,
-  legend_style = c("covariates_auc", "numbers_auc", "none"),
-  test_style = c("all_combs", "BvsC", "AvsC"), test_param = list())
+added_da(formula, data, perm_test_sequence = FALSE, plot_roc = TRUE,
+  col = "black", lty = 1, legend_style = c("covariates_auc",
+  "numbers_auc", "none"), test_style = c("all_combs", "BvsC", "AvsC"),
+  test_param = list())
 }
 \arguments{
 \item{formula}{a glm full formula}
@@ -34,6 +35,9 @@ covariate, BcsC to compare the models with the one identical
 excepting for the last covariate added}
 
 \item{test_param}{list of parameter to be passed to pROC::roc.test}
+
+\item{perm_tests_sequence}{permutate model covariate sequence (checking
+all possible models/sequences given the covariates specified)}
 }
 \description{
 The function add one terms per iteration, estimate the model,
