@@ -5,8 +5,8 @@
 \title{Calculate diagnostic accuracy measures for several cutoffs of a quantitative
 marker.}
 \usage{
-cutoff_da(cutoffs = NULL, test = NULL, refstd = NULL, round.dig = 4,
-  ...)
+cutoff_da(cutoffs = NULL, test = NULL, refstd = NULL,
+  round.dig = 4, ...)
 }
 \arguments{
 \item{cutoffs}{Cutoffs considered}

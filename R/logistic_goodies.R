@@ -209,7 +209,8 @@ added_da <- function(formula, data,
                                         # browser()
             temp <- legend("bottomright", 
                            legend = rep(" ", length(rocs)),
-                           ## qui metto il reverse perché l'asse x è invertito!
+                           ## qui metto il reverse perche` l'asse x
+                           ## e' invertito!
                            text.width = - strwidth(longest_legend),
                            bty = 'n', #do not draw the box
                            col = col, 
