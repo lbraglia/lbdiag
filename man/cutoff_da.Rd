@@ -5,17 +5,21 @@
 \title{Calculate diagnostic accuracy measures for several cutoffs of a quantitative
 marker.}
 \usage{
-cutoff_da(cutoffs = NULL, test = NULL, refstd = NULL,
-  round.dig = 4, ...)
+cutoff_da(cutoffs = NULL, direction = c(">", "<"), test = NULL,
+  refstd = NULL, digits = 4, ...)
 }
 \arguments{
 \item{cutoffs}{Cutoffs considered}
+
+\item{direction}{> or <: if > a test value greater than the cutoff
+will be interpreted as a positive test, in < a test value below
+the threshold}
 
 \item{test}{Test}
 
 \item{refstd}{Reference standard}
 
-\item{round.dig}{Rounding digits}
+\item{digits}{Rounding digits}
 
 \item{...}{parameters passed to da}
 }

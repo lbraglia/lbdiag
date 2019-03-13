@@ -5,31 +5,34 @@
 #' marker.
 #' 
 #' @param cutoffs Cutoffs considered
+#' @param direction > or <: if > a test value greater than the cutoff
+#'     will be interpreted as a positive test, in < a test value below
+#'     the threshold
 #' @param test Test
 #' @param refstd Reference standard
-#' @param round.dig Rounding digits
+#' @param digits Rounding digits
 #' @param ... parameters passed to da
 #' @return A data.frame for diagnostic accuracy studies.
 #' @export
-cutoff_da <- function(cutoffs = NULL, 
+cutoff_da <- function(cutoffs = NULL,
+                      direction = c(">", "<"),
                       test = NULL,
                       refstd = NULL,
-                      round.dig = 4,
+                      digits = 4,
                       ## parameters passed to da
                       ...
                       ){
   res <- list()
-  
+  direction <- match.arg(direction)
   for (tres in cutoffs)  {
-    index <- which(cutoffs %in% tres)
-    tmp <- 	da(test=(test > tres),  
-                   refstd=refstd,  
-                   round.dig=round.dig,
-                   ...)[["stats"]]
-    tmp$thresh <- tres
-    res[[index]] <- tmp[c(5,1:4)]
+      index <- which(cutoffs %in% tres)
+      test_dummy <- if (direction == ">") (test > tres) else (test < tres)
+      tmp <- da(test = test_dummy, refstd = refstd, digits = digits, ...)
+      tmp <- tmp[["stats"]]
+      tmp$thresh <- tres
+      res[[index]] <- tmp[, c("thresh", "Est", "Low.CI", "Up.CI")]
   }
-  
+
   do.call("rbind", res)
   
   ## Esempio chesi procalcitonina
