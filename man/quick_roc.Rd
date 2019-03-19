@@ -4,19 +4,26 @@
 \alias{quick_roc}
 \title{A quick ROC plot.}
 \usage{
-quick_roc(test = NULL, refstd = NULL, direction = c("auto", "<",
-  ">"), plot.roc = TRUE, main = "")
+quick_roc(test = NULL, refstd = NULL, roc_params = list(direction =
+  c("auto", "<", ">")), plot = TRUE, plot_params = list(print.thres =
+  TRUE, mar = par("mar"), print.thres.pattern =
+  "Thresh: \%.2f\\nSp: \%.2f\\nSe: \%.2f", main = ""), plot_auc = TRUE,
+  auc_cex = 1)
 }
 \arguments{
-\item{test}{Marker}
+\item{test}{Quantitative marker}
 
 \item{refstd}{Reference standard (binary variable)}
 
-\item{direction}{Charachter. Direction passed to \code{pROC::roc}}
+\item{roc_params}{list of parameters passed to pROC::roc}
 
-\item{plot.roc}{Logical. Plot ROC curve?}
+\item{plot}{Logical. Plot ROC curve?}
 
-\item{main}{Graph main title}
+\item{plot_params}{list of parameters passed to pROC::plot.roc}
+
+\item{plot_auc}{add auc estimates to the plot}
+
+\item{auc_cex}{cex for auc estimates in the plot}
 }
 \value{
 The function plot the graph and return a list with ROC statistics

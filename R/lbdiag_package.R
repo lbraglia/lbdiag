@@ -7,6 +7,7 @@
 #' @importFrom graphics legend
 #' @importFrom lbmisc NA_remove
 #' @importFrom pROC ci.auc
+#' @importFrom pROC plot.roc
 #' @importFrom pROC roc
 #' @importFrom stats mcnemar.test
 #' @importFrom stats predict
