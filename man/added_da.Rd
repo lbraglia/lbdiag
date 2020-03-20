@@ -9,10 +9,17 @@ idea in Knottnerus Buntinx (editors), Evidence base of
     clinical diagnosis, 2008, Wiley Blackwell, pag 157
 }
 \usage{
-added_da(formula, data, perm_test_sequence = FALSE, plot_roc = TRUE,
-  col = "black", lty = 1, legend_style = c("covariates_auc",
-  "numbers_auc", "none"), test_style = c("all_combs", "BvsC", "AvsC"),
-  test_param = list())
+added_da(
+  formula,
+  data,
+  perm_test_sequence = FALSE,
+  plot_roc = TRUE,
+  col = "black",
+  lty = 1,
+  legend_style = c("covariates_auc", "numbers_auc", "none"),
+  test_style = c("all_combs", "BvsC", "AvsC"),
+  test_param = list()
+)
 }
 \arguments{
 \item{formula}{a glm full formula}

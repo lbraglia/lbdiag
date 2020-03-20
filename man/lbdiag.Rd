@@ -3,8 +3,4 @@
 \docType{package}
 \name{lbdiag}
 \alias{lbdiag}
-\alias{lbdiag-package}
 \title{lbdiag.}
-\description{
-lbdiag.
-}

@@ -5,9 +5,15 @@
 \title{Calculate diagnostic accuracy measures for binary measures (test, reference
 standard)}
 \usage{
-da_old(test = NULL, refstd = NULL, alpha = 0.05, digits = 4L,
-  positive_first = TRUE, ppv_npv_prev = NULL,
-  ppv_npv_force_unadj = FALSE)
+da_old(
+  test = NULL,
+  refstd = NULL,
+  alpha = 0.05,
+  digits = 4L,
+  positive_first = TRUE,
+  ppv_npv_prev = NULL,
+  ppv_npv_force_unadj = FALSE
+)
 }
 \arguments{
 \item{test}{test variable (dichotomic factor or logical)}

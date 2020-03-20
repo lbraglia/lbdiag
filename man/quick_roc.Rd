@@ -4,11 +4,16 @@
 \alias{quick_roc}
 \title{A quick ROC plot.}
 \usage{
-quick_roc(test = NULL, refstd = NULL, roc_params = list(direction =
-  c("auto", "<", ">")), plot = TRUE, plot_params = list(print.thres =
-  TRUE, mar = par("mar"), print.thres.pattern =
-  "Thresh: \%.2f\\nSp: \%.2f\\nSe: \%.2f", main = ""), plot_auc = TRUE,
-  auc_cex = 1)
+quick_roc(
+  test = NULL,
+  refstd = NULL,
+  roc_params = list(direction = c("auto", "<", ">")),
+  plot = TRUE,
+  plot_params = list(print.thres = TRUE, mar = par("mar"), print.thres.pattern =
+    "Thresh: \%.2f\\nSp: \%.2f\\nSe: \%.2f", main = ""),
+  plot_auc = TRUE,
+  auc_cex = 1
+)
 }
 \arguments{
 \item{test}{Quantitative marker}
