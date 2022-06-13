@@ -9,6 +9,6 @@ Imports: bdpv, lbmisc, pROC, stats, graphics
 URL: http://github.com/lbraglia/lbdiag
 BugReports: http://github.com/lbraglia/lbdiag/issues
 License: GPL-3
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 Suggests: testthat
 Encoding: UTF-8
