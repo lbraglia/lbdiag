@@ -98,7 +98,8 @@ roc_with_boxplot <- function(test, refstd,
     roc <- quick_roc(test = test, refstd = refstd,
                      roc_params = list(direction = direction))
     cutoff <- roc$best.thresh
-    bp <- boxplot(test ~ refstd, 
+    bp <- boxplot(test ~ refstd,
+                  ylab = "",
                   xlab = comment(test),
                   horizontal = TRUE,
                   las = 1)
