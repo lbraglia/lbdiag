@@ -2,5 +2,21 @@
 % Please edit documentation in R/lbdiag_package.R
 \docType{package}
 \name{lbdiag}
+\alias{lbdiag-package}
 \alias{lbdiag}
 \title{lbdiag.}
+\description{
+Diagnostic accuracy miscellaneous utilities.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{http://github.com/lbraglia/lbdiag}
+  \item Report bugs at \url{http://github.com/lbraglia/lbdiag/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Luca Braglia \email{lbraglia@gmail.com}
+
+}

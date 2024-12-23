@@ -12,7 +12,8 @@ da(
   digits = 4L,
   positive_first = TRUE,
   ppv_npv_prev = NULL,
-  ppv_npv_force_unadj = FALSE
+  ppv_npv_force_unadj = FALSE,
+  ppv_npv_ci_method = c("mercaldo", "clopper.pearson")
 )
 }
 \arguments{

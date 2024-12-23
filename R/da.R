@@ -33,8 +33,11 @@ da <- function(test                = NULL,
                alpha               = 0.05,
                digits              = 4L,
                positive_first      = TRUE,
+               #
                ppv_npv_prev        = NULL,
-               ppv_npv_force_unadj = FALSE)
+               ppv_npv_force_unadj = FALSE,
+               ppv_npv_ci_method = c("mercaldo", "clopper.pearson")
+               )
 {
 
     ## Test input
@@ -45,7 +48,9 @@ da <- function(test                = NULL,
     ok.input <-
         (is.logical(positive_first)) &
         (is.null(ppv_npv_prev) || is.numeric(ppv_npv_prev))
-    
+
+  ppv_npv_ci_method <- match.arg(ppv_npv_ci_method)
+  
     ## testa l'immissione
     if (!ok.input)
         stop("OR positive_first not logical\n",
@@ -105,8 +110,15 @@ da <- function(test                = NULL,
     ## Accuracy
     accuracy    <- (tn+tp)/ n
     accuracy.ci <- (binom.test( tn+tp, n, conf.level = 1 - alpha )$conf.int)[1:2]
-    
-    
+
+  ## ppv esatti
+  cp_ppv <- tp/n.positive
+  cp_ppv.ci <- (binom.test(tp, n.positive, conf.level = 1 - alpha )$conf.int)[1:2]
+
+  ## npv esatti
+  cp_npv <- tn/n.negative
+  cp_npv.ci <- (binom.test(tn, n.negative, conf.level = 1 - alpha )$conf.int)[1:2]
+  
     ## Odd ratio diagnostico
     ## or <- (sensitivity/(1-sensitivity))/ ((1-specificity)/specificity)
     or <- (tp * tn)/ (fp*fn)
@@ -135,13 +147,16 @@ da <- function(test                = NULL,
         ## Se invece l'ha specificato, posto che sia ragionevo
         prev <- ppv_npv_prev
     } else {
-        stop("ppv_npv_prev must be NULL or numeric [0,1]")		
-    }	
+        stop("ppv_npv_prev must be NULL or numeric [0,1]")
+    }
 
-    ## below if there is a 0 in the 2x2 table, then one between NPV or
-    ## PPV have to be 0 or 1, so therefore Mercaldo suggests using
-    ## adjusted (plain, not logit method) nonetheless one can force to
-    ## stay unadjusted (for whatever reason)
+
+  ## MERCALDO
+  ## --------
+  ## below if there is a 0 in the 2x2 table, then one between NPV or
+  ## PPV have to be 0 or 1, so therefore Mercaldo suggests using
+  ## adjusted (plain, not logit method) nonetheless one can force to
+  ## stay unadjusted (for whatever reason)
 
     if (all(tab > 0) || (any(tab == 0) && (ppv_npv_force_unadj==TRUE))) {
         ## -------------------------------------------
@@ -149,7 +164,7 @@ da <- function(test                = NULL,
         ## -------------------------------------------
         
         ## PPV standard logit
-        ppv <- (sensitivity*prev)/((sensitivity*prev) + (1-specificity)*(1-prev) )
+        mercaldo_ppv <- (sensitivity*prev)/((sensitivity*prev) + (1-specificity)*(1-prev) )
         logit.ppv <- log((sensitivity * prev) /
                          ((1-specificity)*(1-prev)))
         var.logit.ppv <- ((1-sensitivity)/sensitivity)*(1/n.diseased) +
@@ -159,10 +174,10 @@ da <- function(test                = NULL,
             (1 + exp(logit.ppv - z*sqrt(var.logit.ppv)))
         ppv.wald.up <- exp(logit.ppv + z*sqrt(var.logit.ppv))/
             (1 + exp(logit.ppv + z*sqrt(var.logit.ppv)))
-        ppv.ci <- c(ppv.wald.low, ppv.wald.up)
+        mercaldo_ppv.ci <- c(ppv.wald.low, ppv.wald.up)
 
         ## NPV standard logit
-        npv <- 	(specificity*(1- prev))/
+        mercaldo_npv <-	(specificity*(1- prev))/
             (  (1-sensitivity)*(prev)  +  specificity*(1- prev) )
         
         logit.npv <- log((specificity * (1-prev)) /
@@ -174,7 +189,7 @@ da <- function(test                = NULL,
             (1 + exp(logit.npv - z*sqrt(var.logit.npv)))
         npv.wald.up <- exp(logit.npv + z*sqrt(var.logit.npv))/
             (1 + exp(logit.npv + z*sqrt(var.logit.npv)))
-        npv.ci <- c(npv.wald.low, npv.wald.up)
+        mercaldo_npv.ci <- c(npv.wald.low, npv.wald.up)
         
     } else {
 	
@@ -188,12 +203,29 @@ da <- function(test                = NULL,
                          conf.level = 1 - alpha)[["PPVNPVDAT"]]
         ppv.row <- row.names(pv.tmp) %in% "PPV"
         npv.row <- row.names(pv.tmp) %in% "NPV"
-        ppv <- pv.tmp[ppv.row,1]
-        ppv.ci <-  unlist(unname(c(pv.tmp[ppv.row, 3:4])))
-        npv <- pv.tmp[npv.row,1]
-        npv.ci <- unlist(unname(c(pv.tmp[npv.row, 3:4])))
+        mercaldo_ppv <- pv.tmp[ppv.row,1]
+        mercaldo_ppv.ci <-  unlist(unname(c(pv.tmp[ppv.row, 3:4])))
+        mercaldo_npv <- pv.tmp[npv.row,1]
+        mercaldo_npv.ci <- unlist(unname(c(pv.tmp[npv.row, 3:4])))
 	
     }
+
+  if (ppv_npv_ci_method == 'mercaldo'){
+
+    ppv <- mercaldo_ppv
+    ppv.ci <- mercaldo_ppv.ci
+    npv <- mercaldo_npv
+    npv.ci <- mercaldo_npv.ci
+    
+  } else if (ppv_npv_ci_method == 'clopper.pearson'){
+
+    ppv <- cp_ppv
+    ppv.ci <- cp_ppv.ci
+    npv <- cp_npv
+    npv.ci <- cp_npv.ci
+    
+  }
+  
 	
     ## Statistiche complessive
     stat <- as.data.frame( rbind(
