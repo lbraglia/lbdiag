@@ -12,7 +12,9 @@
 #' @param plot Logical. Plot ROC curve?
 #' @param plot_params list of parameters passed to pROC::plot.roc
 #' @param plot_auc add auc estimates to the plot
-#' @param auc_cex cex for auc estimates in the plot
+#' @param plot_auc_coords cordinates for auc estimates in the plot
+#' @param plot_auc_pos positioning/alignment for auc estimates in the plot
+#' @param plot_auc_cex cex for auc estimates in the plot
 #' @return The function plot the graph and return a list with ROC statistics
 #' @export
 quick_roc <-
@@ -26,7 +28,9 @@ quick_roc <-
                  print.thres.pattern = "Thresh: %.2f\nSp: %.2f\nSe: %.2f",
                  main = ""),
              plot_auc = TRUE,
-             auc_cex = 1)
+             plot_auc_coords = c(0.15, 0.15),
+             plot_auc_pos = 1,
+             plot_auc_cex = 1)
 {
 
     ## Estimates
@@ -44,29 +48,32 @@ quick_roc <-
         plot_params <- c(list(x = my.roc), plot_params)
         do.call(pROC::plot.roc, plot_params)
         ## AUC estimates with sensible positioning
-        if (plot_auc){
-            y_auc_base <- 0.15
-            x_auc_base <- 0.30
-            y_ci_base  <- 0.1
-            x_ci_base  <- 0.30
-            if (my.ci.auc[2] > 0.5) {
-                y_auc <- y_auc_base
-                x_auc <- x_auc_base
-                y_ci  <- y_ci_base 
-                x_ci  <- x_ci_base 
-            } else {
-                y_auc <- 1 - y_auc_base
-                x_auc <- 1 - x_auc_base
-                y_ci  <- 1 - y_ci_base 
-                x_ci  <- 1 - x_ci_base 
-            }
-            text(x = x_auc, y = y_auc, "AUC: ", pos = 2, cex = auc_cex)
-            text(x = x_ci,  y = y_ci, "95% CI: ", pos = 2 , cex = auc_cex)
-            text(x = x_auc, y = y_auc, sprintf("%.2f", my.ci.auc[2]),
-                 pos = 4, cex = auc_cex)
-            text(x = x_ci,  y = y_ci,
-                 sprintf("%.2f - %.2f", my.ci.auc[1], my.ci.auc[3]),
-                 cex = auc_cex, pos=4)
+      if (plot_auc){
+        auc_string <- sprintf("AUC: %.2f (%.2f - %.2f)", my.ci.auc[2], my.ci.auc[1],
+                              my.ci.auc[3])
+        text(x = plot_auc_coords[1], y = plot_auc_coords[2], auc_string, pos = plot_auc_pos, cex = plot_auc_cex)
+            ## y_auc_base <- 0.15
+            ## x_auc_base <- 0.30
+            ## y_ci_base  <- 0.1
+            ## x_ci_base  <- 0.30
+            ## if (my.ci.auc[2] > 0.5) {
+            ##     y_auc <- y_auc_base
+            ##     x_auc <- x_auc_base
+            ##     y_ci  <- y_ci_base 
+            ##     x_ci  <- x_ci_base 
+            ## } else {
+            ##     y_auc <- 1 - y_auc_base
+            ##     x_auc <- 1 - x_auc_base
+            ##     y_ci  <- 1 - y_ci_base 
+            ##     x_ci  <- 1 - x_ci_base 
+            ## }
+            ## text(x = x_auc, y = y_auc, "AUC: ", pos = 2, cex = plot_auc_cex)
+            ## text(x = x_ci,  y = y_ci, "95% CI: ", pos = 2 , cex = plot_auc_cex)
+            ## text(x = x_auc, y = y_auc, sprintf("%.2f", my.ci.auc[2]),
+            ##      pos = 4, cex = plot_auc_cex)
+            ## text(x = x_ci,  y = y_ci,
+            ##      sprintf("%.2f - %.2f", my.ci.auc[1], my.ci.auc[3]),
+            ##      cex = plot_auc_cex, pos=4)
         }
     }
     uc.roc

@@ -12,7 +12,9 @@ quick_roc(
   plot_params = list(print.thres = TRUE, mar = par("mar"), print.thres.pattern =
     "Thresh: \%.2f\\nSp: \%.2f\\nSe: \%.2f", main = ""),
   plot_auc = TRUE,
-  auc_cex = 1
+  plot_auc_coords = c(0.8, 0.2),
+  plot_auc_pos = 1,
+  plot_auc_cex = 1
 )
 }
 \arguments{
@@ -28,7 +30,11 @@ quick_roc(
 
 \item{plot_auc}{add auc estimates to the plot}
 
-\item{auc_cex}{cex for auc estimates in the plot}
+\item{plot_auc_coords}{cordinates for auc estimates in the plot}
+
+\item{plot_auc_pos}{positioning/alignment for auc estimates in the plot}
+
+\item{plot_auc_cex}{cex for auc estimates in the plot}
 }
 \value{
 The function plot the graph and return a list with ROC statistics
